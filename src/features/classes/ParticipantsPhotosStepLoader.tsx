@@ -6,11 +6,11 @@ import dynamic from "next/dynamic";
 // server compilation target, which breaks the build even behind a
 // dynamic import inside the component. Excluding the whole component
 // from SSR is the fix Next.js docs recommend for browser-only ML libs.
-const ClassWorkspace = dynamic(
-  () => import("./ClassWorkspace").then((m) => m.ClassWorkspace),
+const ParticipantsPhotosStep = dynamic(
+  () => import("./ParticipantsPhotosStep").then((m) => m.ParticipantsPhotosStep),
   { ssr: false }
 );
 
-export function ClassWorkspaceLoader({ classGroupId }: { classGroupId: string }) {
-  return <ClassWorkspace classGroupId={classGroupId} />;
+export function ParticipantsPhotosStepLoader({ classGroupId }: { classGroupId: string }) {
+  return <ParticipantsPhotosStep classGroupId={classGroupId} />;
 }

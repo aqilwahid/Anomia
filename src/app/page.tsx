@@ -1,5 +1,5 @@
-import { ClassList } from "@/features/classes/ClassList";
+import { HomeView } from "@/features/classes/HomeView";
 
 export default function Home() {
-  return <ClassList />;
+  return <HomeView />;
 }

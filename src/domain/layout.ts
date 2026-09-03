@@ -1,30 +1,33 @@
-export interface RoomLayout {
+export type TableLayoutTemplate =
+  | "banquet"
+  | "classroom"
+  | "conference"
+  | "hollow-square"
+  | "theater"
+  | "ushape"
+  | "custom";
+
+export interface SeatingDay {
   id: string;
   classGroupId: string;
-  name: string;
-  rows: number;
-  cols: number;
+  label: string;
+  order: number;
+  layoutTemplate: TableLayoutTemplate;
+  locked: boolean;
   createdAt: string;
 }
 
-export interface Seat {
+export interface SeatingTable {
   id: string;
-  roomLayoutId: string;
-  row: number;
-  col: number;
-  label: string | null;
-}
-
-export interface SeatingPlan {
-  id: string;
-  roomLayoutId: string;
-  label: string;
-  effectiveFrom: string;
+  seatingDayId: string;
+  name: string;
+  seatCount: number;
+  order: number;
 }
 
 export interface SeatAssignment {
   id: string;
-  seatingPlanId: string;
-  seatId: string;
+  seatingTableId: string;
+  seatIndex: number;
   participantId: string;
 }

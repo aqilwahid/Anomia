@@ -1,10 +1,10 @@
-import { ClassWorkspaceLoader } from "@/features/classes/ClassWorkspaceLoader";
+import { ClassInfoStep } from "@/features/classes/ClassInfoStep";
 
-export default async function ClassPage({
+export default async function ClassInfoPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  return <ClassWorkspaceLoader classGroupId={id} />;
+  return <ClassInfoStep classGroupId={id} />;
 }
