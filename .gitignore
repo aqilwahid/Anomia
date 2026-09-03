@@ -24,8 +24,9 @@ coverage/
 *.tsbuildinfo
 next-env.d.ts
 
-# ML model weights — large binaries, fetch at build/runtime instead
-public/models/*.onnx
+# ML model weights — large binaries, copied from node_modules via
+# scripts/copy-face-models.mjs (postinstall), never committed
+public/models/
 
 # Logs
 npm-debug.log*
