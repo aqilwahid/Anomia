@@ -307,7 +307,7 @@ export const localStore: AnomiaStore = {
   async assignSeat(seatingTableId, seatIndex, participantId) {
     const table = await db.seatingTables.get(seatingTableId);
     if (!table) return;
-    await db.transaction("rw", db.seatAssignments, async () => {
+    await db.transaction("rw", [db.seatingTables, db.seatAssignments], async () => {
       const dayTables = await db.seatingTables.where({ seatingDayId: table.seatingDayId }).toArray();
       const dayTableIds = dayTables.map((t) => t.id);
       const dayAssignments = await db.seatAssignments.where("seatingTableId").anyOf(dayTableIds).toArray();
