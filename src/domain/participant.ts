@@ -21,8 +21,23 @@ export interface Participant {
   classGroupId: string;
   personId: string;
   displayName: string;
+  /** Instansi / divisi / perusahaan asal */
   organization: string | null;
+  /** Jabatan / posisi */
+  jobTitle?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  /** Catatan bebas instruktur, mis. "suka duduk di depan", "mentor: Pak Budi" */
+  notes?: string | null;
+  /** Wajah yang dipakai sebagai foto profil. Kalau kosong, dipilih otomatis (kualitas terbaik). */
+  primaryFaceId?: string | null;
   /** true if created from roster import before any face was labeled to them */
   fromRoster: boolean;
   createdAt: string;
 }
+
+/** Field yang boleh diubah lewat form detail peserta. */
+export type ParticipantDetails = Pick<
+  Participant,
+  "displayName" | "organization" | "jobTitle" | "email" | "phone" | "notes"
+>;

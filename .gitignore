@@ -47,3 +47,6 @@ Thumbs.db
 
 # Test fixtures — real participant photos must NEVER be committed
 tests/fixtures/real/
+
+# Archives
+*.zip

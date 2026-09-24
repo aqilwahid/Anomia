@@ -1,4 +1,7 @@
-import { SeatingStep } from "@/features/classes/SeatingStep";
+import type { Metadata } from "next";
+import { SeatingStep } from "@/features/seating/SeatingStep";
+
+export const metadata: Metadata = { title: "Denah Ruangan" };
 
 export default async function SeatingPage({
   params,

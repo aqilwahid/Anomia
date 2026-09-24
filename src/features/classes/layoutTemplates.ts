@@ -4,57 +4,41 @@ export const LAYOUT_TEMPLATES: Array<{
   value: TableLayoutTemplate;
   label: string;
   description: string;
-  icon: string;
-  defaultSeatCount: number;
 }> = [
   {
     value: "banquet",
     label: "Banquet",
-    description: "Meja bundar, diskusi kelompok & makan bersama",
-    icon: "donut_large",
-    defaultSeatCount: 8,
+    description: "Meja bundar berkelompok, cocok untuk diskusi & kerja tim",
   },
   {
     value: "classroom",
     label: "Classroom",
-    description: "Baris meja sejajar, fokus pada fasilitator & materi",
-    icon: "table_restaurant",
-    defaultSeatCount: 3,
-  },
-  {
-    value: "conference",
-    label: "Conference",
-    description: "Satu meja besar, interaksi intensif & pengambilan keputusan",
-    icon: "meeting_room",
-    defaultSeatCount: 10,
-  },
-  {
-    value: "hollow-square",
-    label: "Hollow Square",
-    description: "Persegi berongga tengah, diskusi terbuka setara",
-    icon: "crop_square",
-    defaultSeatCount: 12,
-  },
-  {
-    value: "theater",
-    label: "Theater",
-    description: "Hanya deretan kursi, kapasitas maksimal audiens",
-    icon: "theater_comedy",
-    defaultSeatCount: 6,
+    description: "Baris meja menghadap depan, fokus ke materi & fasilitator",
   },
   {
     value: "ushape",
     label: "U-Shape",
-    description: "Formasi tapal kuda, interaksi fasilitator & peserta",
-    icon: "u_turn_right",
-    defaultSeatCount: 8,
+    description: "Tapal kuda terbuka ke depan, interaksi fasilitator–peserta",
+  },
+  {
+    value: "hollow-square",
+    label: "Hollow Square",
+    description: "Persegi berongga, semua peserta saling berhadapan setara",
+  },
+  {
+    value: "conference",
+    label: "Conference",
+    description: "Satu meja panjang, rapat & pengambilan keputusan",
+  },
+  {
+    value: "theater",
+    label: "Theater",
+    description: "Hanya deretan kursi, kapasitas maksimal untuk seminar",
   },
   {
     value: "custom",
-    label: "Custom Layout",
-    description: "Atur bebas posisi tiap meja & kursi sesuai kebutuhan",
-    icon: "tune",
-    defaultSeatCount: 4,
+    label: "Custom",
+    description: "Mulai dari meja kecil, atur bebas posisi & jumlah kursi",
   },
 ];
 

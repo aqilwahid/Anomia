@@ -1,4 +1,7 @@
-import { ParticipantsPhotosStepLoader } from "@/features/classes/ParticipantsPhotosStepLoader";
+import type { Metadata } from "next";
+import { ParticipantsPhotosStepLoader } from "@/features/participants/ParticipantsPhotosStepLoader";
+
+export const metadata: Metadata = { title: "Peserta & Foto" };
 
 export default async function ParticipantsPage({
   params,

@@ -13,6 +13,10 @@ export interface Photo {
   classGroupId: string;
   imageAssetId: string;
   role: PhotoRole;
+  /** original file name, for display only */
+  fileName?: string | null;
+  /** small JPEG preview (≈320px) so lists don't have to load the full photo */
+  thumbDataUrl?: string | null;
   createdAt: string;
 }
 
@@ -29,6 +33,7 @@ export interface DetectedFace {
   id: string;
   photoId: string;
   classGroupId: string;
+  /** box in the coordinate space of the stored ImageAsset */
   box: FaceBox;
   /** crop rendered as a data URL so it survives even if the original photo is later deleted */
   cropDataUrl: string;
@@ -36,6 +41,8 @@ export interface DetectedFace {
   qualityScore: number;
   status: DetectedFaceStatus;
   participantId: string | null;
+  /** "manual" = kotak digambar instruktur karena detektor melewatkannya */
+  source?: "auto" | "manual";
   createdAt: string;
 }
 

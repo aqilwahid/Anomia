@@ -1,4 +1,7 @@
-import { LabelingStep } from "@/features/classes/LabelingStep";
+import type { Metadata } from "next";
+import { LabelingStepLoader } from "@/features/labeling/LabelingStepLoader";
+
+export const metadata: Metadata = { title: "Labeling Wajah" };
 
 export default async function LabelingPage({
   params,
@@ -6,5 +9,5 @@ export default async function LabelingPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  return <LabelingStep classGroupId={id} />;
+  return <LabelingStepLoader classGroupId={id} />;
 }

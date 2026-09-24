@@ -1,11 +1,29 @@
 import type { FaceBox } from "@/domain/face";
+import type { ScanDepth } from "./tiling";
 
 export interface RawDetectedFace {
+  /** box in the pixel space of the canvas passed to detect() */
   box: FaceBox;
   cropDataUrl: string;
-  embedding: number[];
+  /** null when the description model could not produce a descriptor for this face */
+  embedding: number[] | null;
   detectorScore: number;
   qualityScore: number;
+}
+
+export interface DetectProgress {
+  phase: "scan" | "describe";
+  done: number;
+  total: number;
+}
+
+export interface DetectOptions {
+  /** "deep" adds a finer tile scale — slower, catches very small faces (used by "Pindai ulang") */
+  depth?: ScanDepth;
+  /** faces that already exist (same pixel space) — candidates overlapping them are skipped */
+  exclude?: FaceBox[];
+  onProgress?: (progress: DetectProgress) => void;
+  signal?: AbortSignal;
 }
 
 /**
@@ -16,14 +34,17 @@ export interface RawDetectedFace {
  */
 export interface FacePipeline {
   init(): Promise<void>;
-  detect(image: HTMLImageElement): Promise<RawDetectedFace[]>;
+  detect(image: HTMLCanvasElement, options?: DetectOptions): Promise<RawDetectedFace[]>;
+  /** Describe a face inside a box drawn by the instructor (detector missed it). */
+  describeRegion(image: HTMLCanvasElement, box: FaceBox): Promise<RawDetectedFace>;
 }
 
 export function cosineSimilarity(a: number[], b: number[]): number {
   let dot = 0;
   let normA = 0;
   let normB = 0;
-  for (let i = 0; i < a.length; i++) {
+  const n = Math.min(a.length, b.length);
+  for (let i = 0; i < n; i++) {
     dot += a[i] * b[i];
     normA += a[i] * a[i];
     normB += b[i] * b[i];

@@ -7,6 +7,15 @@ export type TableLayoutTemplate =
   | "ushape"
   | "custom";
 
+/**
+ * Bentuk meja di denah ruangan.
+ * - round  : meja bundar, kursi mengelilingi
+ * - rect   : meja panjang, kursi di kedua sisi panjang (+ ujung)
+ * - row    : meja panjang, kursi hanya di satu sisi (classroom, lengan U-shape, sisi hollow square)
+ * - chairs : deretan kursi tanpa meja (theater)
+ */
+export type TableShape = "round" | "rect" | "row" | "chairs";
+
 export interface SeatingDay {
   id: string;
   classGroupId: string;
@@ -14,6 +23,10 @@ export interface SeatingDay {
   order: number;
   layoutTemplate: TableLayoutTemplate;
   locked: boolean;
+  /** lebar ruangan dalam cm (sumbu x, sejajar layar/depan kelas) */
+  roomWidth?: number;
+  /** kedalaman ruangan dalam cm (sumbu y, dari depan ke belakang) */
+  roomDepth?: number;
   createdAt: string;
 }
 
@@ -23,6 +36,12 @@ export interface SeatingTable {
   name: string;
   seatCount: number;
   order: number;
+  shape?: TableShape;
+  /** posisi titik tengah meja di ruangan, dalam cm. y = 0 adalah sisi depan (layar/fasilitator). */
+  x?: number;
+  y?: number;
+  /** rotasi dalam derajat, searah jarum jam */
+  rotation?: number;
 }
 
 export interface SeatAssignment {

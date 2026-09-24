@@ -126,28 +126,101 @@
   --spacing-seating-grid-cell: 5rem;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   background: var(--color-surface);
   color: var(--color-on-surface);
 }
 
-.material-symbols-outlined {
-  font-family: "Material Symbols Outlined";
-  font-weight: normal;
-  font-style: normal;
-  font-size: 24px;
-  line-height: 1;
-  letter-spacing: normal;
-  text-transform: none;
-  display: inline-block;
-  white-space: nowrap;
-  word-wrap: normal;
-  direction: ltr;
-  -webkit-font-smoothing: antialiased;
+@theme {
+  --animate-fade-in: fade-in 160ms ease-out;
+  --animate-pop-in: pop-in 200ms cubic-bezier(0.2, 0.9, 0.3, 1.15);
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+/* thin, unobtrusive scrollbars for the horizontal face queues */
+.scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-outline-variant) transparent;
+}
+
+/* checkerboard-free subtle dotted floor for the room plan editor */
+.bg-dots {
+  background-image: radial-gradient(var(--color-outline-variant) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+
+.print-only {
+  display: none;
 }
 
 @media print {
+  @page {
+    size: A4 landscape;
+    margin: 10mm;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  main,
+  main > * {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
   .no-print {
     display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+}
+
+@media print {
+  .print-sheet {
+    width: 100%;
+  }
+
+  .print-sheet svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 188mm;
+    margin: 0 auto;
+    break-inside: avoid;
   }
 }
