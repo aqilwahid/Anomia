@@ -4,6 +4,7 @@ import type { AnomiaStore, AutoAssignStrategy, NewFaceInput, RosterRow } from ".
 import type { ClassGroup, Participant, Person } from "@/domain/participant";
 import type { DetectedFace, FaceEmbedding, Photo } from "@/domain/face";
 import type { SeatAssignment, SeatingDay, SeatingTable } from "@/domain/layout";
+import type { InstructorReport } from "@/domain/report";
 
 function now(): string {
   return new Date().toISOString();
@@ -138,6 +139,7 @@ export const localStore: AnomiaStore = {
         await db.detectedFaces.bulkDelete(faceIds);
         await db.photos.where({ classGroupId: id }).delete();
         await db.imageAssets.bulkDelete(assetIds);
+        await db.instructorReports.where({ classGroupId: id }).delete();
         await db.participants.where({ classGroupId: id }).delete();
         await db.persons.bulkDelete(personIds);
         await db.classGroups.delete(id);
@@ -146,10 +148,11 @@ export const localStore: AnomiaStore = {
   },
 
   async getClassStats(classGroupId) {
-    const [participants, photos, faces] = await Promise.all([
+    const [participants, photos, faces, reports] = await Promise.all([
       db.participants.where({ classGroupId }).toArray(),
       db.photos.where({ classGroupId }).count(),
       db.detectedFaces.where({ classGroupId }).toArray(),
+      db.instructorReports.where({ classGroupId }).count(),
     ]);
     const active = faces.filter((f) => f.status !== "not_a_face" && f.status !== "rejected");
     const labeled = active.filter((f) => f.status === "assigned");
@@ -171,6 +174,7 @@ export const localStore: AnomiaStore = {
       participantsWithFace: participants.filter((p) => withFace.has(p.id)).length,
       seatingDays: days.length,
       seated,
+      reports,
     };
   },
 
@@ -650,5 +654,70 @@ export const localStore: AnomiaStore = {
   async clearSeats(seatingDayId) {
     const { assignments } = await dayAssignments(seatingDayId);
     if (assignments.length) await db.seatAssignments.bulkDelete(assignments.map((a) => a.id));
+  },
+
+  async listReports(classGroupId) {
+    const reports = await db.instructorReports.where({ classGroupId }).toArray();
+    return reports.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  },
+
+  async getReport(id) {
+    return db.instructorReports.get(id);
+  },
+
+  async saveReport(report) {
+    const existing = await db.instructorReports.get(report.id);
+    const updated: InstructorReport = {
+      ...report,
+      updatedAt: now(),
+    };
+    if (existing) {
+      await db.instructorReports.put(updated);
+    } else {
+      await db.instructorReports.add(updated);
+    }
+  },
+
+  async deleteReport(id) {
+    await db.instructorReports.delete(id);
+  },
+
+  async getDefaultReport(classGroupId) {
+    const reports = await this.listReports(classGroupId);
+    if (reports.length > 0) {
+      return reports[0];
+    }
+    const classGroup = await db.classGroups.get(classGroupId);
+    const participants = await db.participants.where({ classGroupId }).toArray();
+    const days = await db.seatingDays.where({ classGroupId }).toArray();
+    const sortedDays = days.sort((a, b) => a.order - b.order);
+    const defaultName =
+      typeof window !== "undefined"
+        ? localStorage.getItem("anomia:instructor-name") || "YAQ"
+        : "YAQ";
+    const today = new Date().toISOString().slice(0, 10);
+    const newReport: InstructorReport = {
+      id: nanoid(),
+      classGroupId,
+      instructorName: defaultName,
+      title: `${defaultName} - PELAPORAN HARIAN INSTRUKTUR`,
+      className: classGroup?.name ?? "",
+      date: today,
+      attendancePresent: participants.length,
+      attendanceTotal: participants.length,
+      attendanceMode: "offline",
+      presentParticipantIds: participants.map((p) => p.id),
+      absentParticipantIds: [],
+      materialProgress: "",
+      classCondition: "aktif",
+      wagIssue: "Terespon.",
+      teamInfo: "-",
+      includeSeatingPlan: sortedDays.length > 0,
+      seatingDayId: sortedDays.length > 0 ? sortedDays[0].id : null,
+      createdAt: now(),
+      updatedAt: now(),
+    };
+    await db.instructorReports.add(newReport);
+    return newReport;
   },
 };

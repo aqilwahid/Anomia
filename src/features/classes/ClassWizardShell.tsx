@@ -14,6 +14,7 @@ const STEPS = [
   { path: "/participants", label: "Peserta & Foto" },
   { path: "/labeling", label: "Labeling Wajah" },
   { path: "/seating", label: "Denah Ruangan" },
+  { path: "/report", label: "Laporan" },
 ] as const;
 
 function stepMeta(index: number, stats: ClassStats | null, classGroup: ClassGroup | null) {
@@ -31,10 +32,15 @@ function stepMeta(index: number, stats: ClassStats | null, classGroup: ClassGrou
         done: stats.faces > 0 && stats.labeledFaces === stats.faces,
         hint: stats.faces ? `${stats.labeledFaces}/${stats.faces} wajah dinamai` : "Belum ada wajah",
       };
-    default:
+    case 3:
       return {
         done: stats.participants > 0 && stats.seated >= stats.participants,
         hint: stats.seatingDays ? `${stats.seated}/${stats.participants} sudah duduk` : "Belum ada denah",
+      };
+    default:
+      return {
+        done: Boolean(stats.reports && stats.reports > 0),
+        hint: stats.reports ? `${stats.reports} laporan dibuat` : "Laporan & PDF",
       };
   }
 }

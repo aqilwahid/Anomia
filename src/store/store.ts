@@ -8,6 +8,7 @@ import type {
   PhotoRole,
 } from "@/domain/face";
 import type { SeatAssignment, SeatingDay, SeatingTable, TableLayoutTemplate } from "@/domain/layout";
+import type { InstructorReport } from "@/domain/report";
 
 export type RosterRow = { displayName: string } & Partial<Omit<ParticipantDetails, "displayName">>;
 
@@ -40,6 +41,7 @@ export interface ClassStats {
   seatingDays: number;
   /** participants seated on the first seating day */
   seated: number;
+  reports?: number;
 }
 
 /**
@@ -153,4 +155,10 @@ export interface AnomiaStore {
   autoAssignSeats(seatingDayId: string, strategy?: AutoAssignStrategy): Promise<void>;
   shuffleSeats(seatingDayId: string): Promise<void>;
   clearSeats(seatingDayId: string): Promise<void>;
+
+  listReports(classGroupId: string): Promise<InstructorReport[]>;
+  getReport(id: string): Promise<InstructorReport | undefined>;
+  saveReport(report: InstructorReport): Promise<void>;
+  deleteReport(id: string): Promise<void>;
+  getDefaultReport(classGroupId: string): Promise<InstructorReport>;
 }

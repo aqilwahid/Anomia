@@ -1,10 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import {
   Download,
   Eye,
   EyeOff,
+  FileText,
   Lock,
   LockOpen,
   Maximize2,
@@ -882,6 +884,11 @@ export function SeatingStep({ classGroupId }: { classGroupId: string }) {
             <Button variant="secondary" size="sm" icon={Printer} onClick={() => window.print()}>
               Cetak / PDF
             </Button>
+            <Link href={`/classes/${classGroupId}/report`}>
+              <Button variant="secondary" size="sm" icon={FileText}>
+                Laporan
+              </Button>
+            </Link>
             <Button variant="secondary" size="sm" icon={Download} onClick={() => exportPng(false)} disabled={exporting}>
               {exporting ? "Menyiapkan…" : "Unduh gambar"}
             </Button>
@@ -1148,8 +1155,8 @@ export function SeatingStep({ classGroupId }: { classGroupId: string }) {
         <StepFooterNav
           backHref={`/classes/${classGroupId}/labeling`}
           backLabel="Labeling Wajah"
-          nextHref="/"
-          nextLabel="Selesai"
+          nextHref={`/classes/${classGroupId}/report`}
+          nextLabel="Laporan Instruktur"
           hint={
             participants.length - seatedCount > 0
               ? `${participants.length - seatedCount} peserta belum duduk di ${activeDay.label}`

@@ -41,6 +41,12 @@ Buka `http://localhost:3000`, buat kelas, import roster, lalu upload foto — de
    - Beberapa sesi (Day 1, Day 2, …): salin denah dengan posisi duduk sama, diacak (rotasi), atau dikosongkan. Sesi bisa dikunci.
    - **Mode hafalan**: nama disembunyikan, ketuk kursi untuk mengintip.
    - **Cetak / PDF** dan **Unduh gambar (PNG)** mencetak/membagikan *seluruh ruangan* dalam satu halaman, bukan per meja. Di HP tersedia tombol **Bagikan** (WhatsApp, email, dll).
+5. **Laporan harian instruktur**
+   - Format standar pelaporan harian: Nama Instruktur, Judul, Kelas, Tanggal, Kehadiran (berapa dari berapa peserta hadir secara offline/online/hybrid), Progres Materi, Kondisi Kelas, Isu WAG Kelas, dan Info untuk Tim.
+   - Checklist interaktif kehadiran peserta dari roster kelas (otomatis menghitung jumlah hadir/absen).
+   - Opsi lampiran denah tempat duduk ruangan sesi terkait ke dokumen PDF.
+   - **Cetak / Ekspor PDF** berorientasi A4 portrait resmi dengan tipografi rapi.
+   - **Salin Format WA** sekali klik untuk ditempel langsung ke grup WhatsApp tim pengelola.
 
 ## Prinsip inti
 
