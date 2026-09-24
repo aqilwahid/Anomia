@@ -128,6 +128,8 @@ export function SeatingStep({ classGroupId }: { classGroupId: string }) {
   const [picked, setPicked] = useState<string | null>(null);
   const [drag, setDrag] = useState<DragState | null>(null);
   const [tableDrag, setTableDrag] = useState<{ id: string; x: number; y: number } | null>(null);
+  const [selectedInstructor, setSelectedInstructor] = useState(false);
+  const [instructorDrag, setInstructorDrag] = useState<{ x: number; y: number } | null>(null);
   const [revealedSeat, setRevealedSeat] = useState<string | null>(null);
   const [highlight, setHighlight] = useState<string | null>(null);
   const [undoStack, setUndoStack] = useState<UndoEntry[]>([]);
@@ -515,6 +517,7 @@ export function SeatingStep({ classGroupId }: { classGroupId: string }) {
     e.stopPropagation();
     blurActiveField();
     setSelectedTableId(tableId);
+    setSelectedInstructor(false);
     if (locked) return;
     const svg = svgRef.current;
     const table = tablesById.get(tableId);
@@ -547,6 +550,100 @@ export function SeatingStep({ classGroupId }: { classGroupId: string }) {
     window.addEventListener("pointermove", move, { passive: false });
     window.addEventListener("pointerup", up);
     window.addEventListener("pointercancel", up);
+  }
+
+  function onInstructorPointerDown(e: React.PointerEvent<SVGGElement>) {
+    if (mode !== "layout" || e.button !== 0) return;
+    e.stopPropagation();
+    blurActiveField();
+    setSelectedTableId(null);
+    setSelectedInstructor(true);
+    if (locked || !activeDay) return;
+
+    const svg = svgRef.current;
+    if (!svg) return;
+
+    const currentX = activeDay.instructorX ?? roomWidth / 2;
+    const currentY =
+      activeDay.instructorY ?? (activeDay.instructorPosition === "bottom" ? roomDepth - 80 : 64);
+
+    const start = toSvgPoint(svg, e.clientX, e.clientY);
+    const origin = { x: currentX, y: currentY };
+    let last = origin;
+    let moved = false;
+
+    const move = (ev: PointerEvent) => {
+      const p = toSvgPoint(svg, ev.clientX, ev.clientY);
+      const dx = p.x - start.x;
+      const dy = p.y - start.y;
+      if (!moved && Math.hypot(dx, dy) < 4) return;
+      moved = true;
+      ev.preventDefault();
+      const clampedX = Math.max(80, Math.min(roomWidth - 80, snap(origin.x + dx)));
+      const clampedY = Math.max(40, Math.min(roomDepth - 40, snap(origin.y + dy)));
+      last = { x: clampedX, y: clampedY };
+      setInstructorDrag({ x: last.x, y: last.y });
+    };
+
+    const up = async () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      window.removeEventListener("pointercancel", up);
+      if (!moved) {
+        setInstructorDrag(null);
+        return;
+      }
+      const dayId = activeDay.id;
+      await mutateLayout("Posisi instruktur dipindah", () =>
+        localStore.updateSeatingDay(dayId, {
+          instructorPosition: "custom",
+          instructorX: last.x,
+          instructorY: last.y,
+        })
+      );
+      setDays((ds) =>
+        ds.map((d) =>
+          d.id === dayId
+            ? { ...d, instructorPosition: "custom", instructorX: last.x, instructorY: last.y }
+            : d
+        )
+      );
+      setInstructorDrag(null);
+    };
+
+    window.addEventListener("pointermove", move, { passive: false });
+    window.addEventListener("pointerup", up);
+    window.addEventListener("pointercancel", up);
+  }
+
+  async function setInstructorPlacement(pos: "top" | "bottom") {
+    if (!activeDay || locked) return;
+    const dayId = activeDay.id;
+    const targetY = pos === "bottom" ? roomDepth - 80 : 64;
+    const targetX = roomWidth / 2;
+    await mutateLayout(`Posisi instruktur diubah ke ${pos === "top" ? "atas" : "bawah"}`, () =>
+      localStore.updateSeatingDay(dayId, {
+        instructorPosition: pos,
+        instructorX: targetX,
+        instructorY: targetY,
+      })
+    );
+    setDays((ds) =>
+      ds.map((d) =>
+        d.id === dayId
+          ? { ...d, instructorPosition: pos, instructorX: targetX, instructorY: targetY }
+          : d
+      )
+    );
+  }
+
+  async function updateInstructorLabel(label: string) {
+    if (!activeDay || locked) return;
+    const dayId = activeDay.id;
+    await localStore.updateSeatingDay(dayId, { instructorLabel: label });
+    setDays((ds) =>
+      ds.map((d) => (d.id === dayId ? { ...d, instructorLabel: label } : d))
+    );
   }
 
   async function updateTable(tableId: string, patch: Partial<Pick<SeatingTable, "name" | "seatCount" | "shape" | "rotation">>) {
@@ -957,7 +1054,10 @@ export function SeatingStep({ classGroupId }: { classGroupId: string }) {
                     setMode(value);
                     setPopover(null);
                     setPicked(null);
-                    if (value === "assign") setSelectedTableId(null);
+                    if (value === "assign") {
+                      setSelectedTableId(null);
+                      setSelectedInstructor(false);
+                    }
                   }}
                   className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 ${
                     mode === value ? "bg-surface-card text-primary shadow-xs" : "text-on-surface-variant hover:text-on-surface"
@@ -1055,6 +1155,20 @@ export function SeatingStep({ classGroupId }: { classGroupId: string }) {
               highlightParticipantId={highlight}
               revealedSeatKey={revealedSeat}
               pickedParticipantId={picked}
+              instructorPosition={activeDay?.instructorPosition ?? "top"}
+              instructorX={instructorDrag ? instructorDrag.x : activeDay?.instructorX}
+              instructorY={instructorDrag ? instructorDrag.y : activeDay?.instructorY}
+              instructorLabel={activeDay?.instructorLabel ?? "Instruktur"}
+              selectedInstructor={selectedInstructor && mode === "layout"}
+              onInstructorPointerDown={mode === "layout" ? onInstructorPointerDown : undefined}
+              onInstructorClick={
+                mode === "layout"
+                  ? () => {
+                      setSelectedTableId(null);
+                      setSelectedInstructor(true);
+                    }
+                  : undefined
+              }
               onSeatPointerDown={(key, e) => {
                 const occ = occupants.get(key);
                 if (occ && !picked) startParticipantDrag(e, occ.participant.id);
@@ -1065,6 +1179,7 @@ export function SeatingStep({ classGroupId }: { classGroupId: string }) {
                 if (mode !== "layout") return;
                 blurActiveField();
                 setSelectedTableId(null);
+                setSelectedInstructor(false);
               }}
               className="block select-none mx-auto"
               style={{ width: svgWidth, height: "auto", ["--rp-font" as string]: "var(--font-inter)" } as React.CSSProperties}
@@ -1119,6 +1234,11 @@ export function SeatingStep({ classGroupId }: { classGroupId: string }) {
               selectedTable={selectedTable}
               occupiedInSelected={selectedTable ? assignments.filter((a) => a.seatingTableId === selectedTable.id).length : 0}
               locked={locked}
+              selectedInstructor={selectedInstructor}
+              instructorPosition={activeDay?.instructorPosition ?? "top"}
+              instructorLabel={activeDay?.instructorLabel ?? "Instruktur"}
+              onSetInstructorPlacement={setInstructorPlacement}
+              onUpdateInstructorLabel={updateInstructorLabel}
               onApplyTemplate={applyTemplate}
               onRoomSize={setRoomSize}
               onAddTable={addTable}
@@ -1142,6 +1262,10 @@ export function SeatingStep({ classGroupId }: { classGroupId: string }) {
           occupants={occupants}
           mode="export"
           labelMode={labelMode === "hidden" ? "name" : labelMode}
+          instructorPosition={activeDay?.instructorPosition ?? "top"}
+          instructorX={activeDay?.instructorX}
+          instructorY={activeDay?.instructorY}
+          instructorLabel={activeDay?.instructorLabel ?? "Instruktur"}
           header={{
             title: exportTitle,
             subtitle: exportSubtitle,

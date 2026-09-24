@@ -13,12 +13,12 @@ export const LAYOUT_TEMPLATES: Array<{
   {
     value: "classroom",
     label: "Classroom",
-    description: "Baris meja menghadap depan, fokus ke materi & fasilitator",
+    description: "Baris meja menghadap depan, fokus ke materi & instruktur",
   },
   {
     value: "ushape",
     label: "U-Shape",
-    description: "Tapal kuda terbuka ke depan, interaksi fasilitator–peserta",
+    description: "Tapal kuda terbuka ke depan, interaksi instruktur–peserta",
   },
   {
     value: "hollow-square",

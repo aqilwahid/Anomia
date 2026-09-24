@@ -18,6 +18,10 @@ interface ReportPrintDocumentProps {
   roomWidth?: number;
   roomDepth?: number;
   dayLabel?: string;
+  instructorPosition?: "top" | "bottom" | "custom";
+  instructorX?: number;
+  instructorY?: number;
+  instructorLabel?: string;
 }
 
 export function ReportPrintDocument({
@@ -29,6 +33,10 @@ export function ReportPrintDocument({
   roomWidth = 800,
   roomDepth = 600,
   dayLabel,
+  instructorPosition = "top",
+  instructorX,
+  instructorY,
+  instructorLabel,
 }: ReportPrintDocumentProps) {
   const formattedDate = formatDateIndo(report.date);
   const modeLabel =
@@ -246,6 +254,10 @@ export function ReportPrintDocument({
               occupants={occupants}
               mode="export"
               labelMode="name"
+              instructorPosition={instructorPosition}
+              instructorX={instructorX}
+              instructorY={instructorY}
+              instructorLabel={instructorLabel}
               header={{
                 title: report.className,
                 subtitle: `Denah Tempat Duduk Peserta (${dayLabel || "Sesi"})`,

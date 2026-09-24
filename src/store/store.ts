@@ -113,7 +113,21 @@ export interface AnomiaStore {
   duplicateSeatingDay(sourceDayId: string, label: string, mode: NewDayMode): Promise<SeatingDay>;
   updateSeatingDay(
     id: string,
-    patch: Partial<Pick<SeatingDay, "label" | "layoutTemplate" | "locked" | "order" | "roomWidth" | "roomDepth">>
+    patch: Partial<
+      Pick<
+        SeatingDay,
+        | "label"
+        | "layoutTemplate"
+        | "locked"
+        | "order"
+        | "roomWidth"
+        | "roomDepth"
+        | "instructorPosition"
+        | "instructorX"
+        | "instructorY"
+        | "instructorLabel"
+      >
+    >
   ): Promise<void>;
   deleteSeatingDay(id: string): Promise<void>;
 

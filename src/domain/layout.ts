@@ -16,6 +16,8 @@ export type TableLayoutTemplate =
  */
 export type TableShape = "round" | "rect" | "row" | "chairs";
 
+export type InstructorPlacement = "top" | "bottom" | "custom";
+
 export interface SeatingDay {
   id: string;
   classGroupId: string;
@@ -27,6 +29,13 @@ export interface SeatingDay {
   roomWidth?: number;
   /** kedalaman ruangan dalam cm (sumbu y, dari depan ke belakang) */
   roomDepth?: number;
+  /** Posisi instruktur & layar: "top" (default di atas), "bottom" (di bawah), atau "custom" */
+  instructorPosition?: InstructorPlacement;
+  /** Koordinat titik tengah area instruktur */
+  instructorX?: number;
+  instructorY?: number;
+  /** Label khusus jika ingin diubah (default: "Instruktur") */
+  instructorLabel?: string;
   createdAt: string;
 }
 
@@ -37,7 +46,7 @@ export interface SeatingTable {
   seatCount: number;
   order: number;
   shape?: TableShape;
-  /** posisi titik tengah meja di ruangan, dalam cm. y = 0 adalah sisi depan (layar/fasilitator). */
+  /** posisi titik tengah meja di ruangan, dalam cm. */
   x?: number;
   y?: number;
   /** rotasi dalam derajat, searah jarum jam */

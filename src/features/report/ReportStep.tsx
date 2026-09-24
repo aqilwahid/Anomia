@@ -884,6 +884,10 @@ export function ReportStep({ classGroupId }: { classGroupId: string }) {
         roomWidth={activeSeatingDay?.roomWidth || 800}
         roomDepth={activeSeatingDay?.roomDepth || 600}
         dayLabel={activeSeatingDay?.label}
+        instructorPosition={activeSeatingDay?.instructorPosition}
+        instructorX={activeSeatingDay?.instructorX}
+        instructorY={activeSeatingDay?.instructorY}
+        instructorLabel={activeSeatingDay?.instructorLabel}
       />
     </div>
   );

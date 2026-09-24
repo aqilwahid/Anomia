@@ -112,6 +112,11 @@ export function LayoutPanel({
   onRenameTable,
   onDuplicateTable,
   onDeleteTable,
+  selectedInstructor,
+  instructorPosition = "top",
+  instructorLabel = "Instruktur",
+  onSetInstructorPlacement,
+  onUpdateInstructorLabel,
 }: {
   template: TableLayoutTemplate;
   participantCount: number;
@@ -129,8 +134,14 @@ export function LayoutPanel({
   onRenameTable: (tableId: string, name: string) => void;
   onDuplicateTable: () => void;
   onDeleteTable: () => void;
+  selectedInstructor?: boolean;
+  instructorPosition?: "top" | "bottom" | "custom";
+  instructorLabel?: string;
+  onSetInstructorPlacement?: (pos: "top" | "bottom") => void;
+  onUpdateInstructorLabel?: (label: string) => void;
 }) {
   const [nameDraft, setNameDraft] = useState<{ id: string; value: string } | null>(null);
+  const [instructorLabelDraft, setInstructorLabelDraft] = useState<string | null>(null);
   const tableName = selectedTable ? (nameDraft?.id === selectedTable.id ? nameDraft.value : selectedTable.name) : "";
 
   function commitName() {
@@ -142,6 +153,80 @@ export function LayoutPanel({
 
   return (
     <div className="flex flex-col gap-space-md">
+      {/* Selected Instructor Panel */}
+      {selectedInstructor && (
+        <section className="rounded-2xl bg-surface-card border-2 border-primary p-space-md shadow-xs flex flex-col gap-3 animate-pop-in">
+          <div className="flex items-center justify-between">
+            <h3 className="font-label-lg text-label-lg text-on-surface flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-primary" />
+              Instruktur & Layar
+            </h3>
+            <span className="text-body-sm px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+              Terpilih
+            </span>
+          </div>
+
+          <div>
+            <label className="block text-body-sm text-on-surface-variant mb-1.5">
+              Posisi di Ruangan:
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                disabled={locked}
+                onClick={() => onSetInstructorPlacement?.("top")}
+                className={`py-2 px-3 rounded-lg border font-label-md text-label-md flex items-center justify-center gap-1.5 transition-colors ${
+                  instructorPosition === "top"
+                    ? "bg-primary-container text-on-primary border-primary font-bold shadow-xs"
+                    : "bg-surface-slate text-on-surface border-border-subtle hover:bg-surface-container"
+                }`}
+              >
+                ↑ Di Atas (Depan)
+              </button>
+              <button
+                type="button"
+                disabled={locked}
+                onClick={() => onSetInstructorPlacement?.("bottom")}
+                className={`py-2 px-3 rounded-lg border font-label-md text-label-md flex items-center justify-center gap-1.5 transition-colors ${
+                  instructorPosition === "bottom"
+                    ? "bg-primary-container text-on-primary border-primary font-bold shadow-xs"
+                    : "bg-surface-slate text-on-surface border-border-subtle hover:bg-surface-container"
+                }`}
+              >
+                ↓ Di Bawah (Belakang)
+              </button>
+            </div>
+            {instructorPosition === "custom" && (
+              <p className="text-[11px] text-primary mt-1 font-medium">
+                Posisi bebas (telah digeser manual)
+              </p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-body-sm text-on-surface-variant mb-1">Label Meja:</label>
+            <input
+              value={instructorLabelDraft ?? instructorLabel}
+              onChange={(e) => setInstructorLabelDraft(e.target.value)}
+              onBlur={() => {
+                if (instructorLabelDraft !== null) {
+                  onUpdateInstructorLabel?.(instructorLabelDraft.trim() || "Instruktur");
+                  setInstructorLabelDraft(null);
+                }
+              }}
+              onKeyDown={(e) => e.key === "Enter" && (e.currentTarget as HTMLInputElement).blur()}
+              disabled={locked}
+              placeholder="Instruktur"
+              className="w-full h-10 px-3 bg-surface-slate border border-border-subtle rounded-lg font-label-lg text-label-lg focus:bg-surface-card focus:border-border-focus focus:outline-none focus:ring-2 focus:ring-border-focus/30"
+            />
+          </div>
+
+          <p className="text-body-sm text-on-surface-variant bg-surface-slate p-2.5 rounded-lg border border-border-subtle">
+            💡 Meja instruktur dapat <strong>diseret langsung</strong> di denah ke posisi mana saja sesuai ruangan asli.
+          </p>
+        </section>
+      )}
+
       {selectedTable && (
         <section className="rounded-2xl bg-surface-card border-2 border-primary-container/40 p-space-md shadow-xs flex flex-col gap-3">
           <div className="flex items-center justify-between">
@@ -238,6 +323,47 @@ export function LayoutPanel({
           ))}
         </div>
       </section>
+
+      {/* Instructor Placement Quick Settings (when instructor is not currently focused) */}
+      {!selectedInstructor && (
+        <section className="rounded-2xl bg-surface-card border border-border-subtle p-space-md shadow-xs flex flex-col gap-2.5">
+          <div className="flex items-center justify-between">
+            <h3 className="font-label-lg text-label-lg text-on-surface">Posisi Instruktur & Layar</h3>
+            <span className="text-body-sm text-on-surface-variant">
+              {instructorPosition === "bottom" ? "Di Bawah" : instructorPosition === "custom" ? "Bebas" : "Di Atas"}
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              disabled={locked}
+              onClick={() => onSetInstructorPlacement?.("top")}
+              className={`py-2 px-3 rounded-lg border font-label-md text-label-md flex items-center justify-center gap-1.5 transition-colors ${
+                instructorPosition === "top"
+                  ? "bg-primary-container text-on-primary border-primary font-bold shadow-xs"
+                  : "bg-surface-slate text-on-surface border-border-subtle hover:bg-surface-container"
+              }`}
+            >
+              ↑ Di Atas (Depan)
+            </button>
+            <button
+              type="button"
+              disabled={locked}
+              onClick={() => onSetInstructorPlacement?.("bottom")}
+              className={`py-2 px-3 rounded-lg border font-label-md text-label-md flex items-center justify-center gap-1.5 transition-colors ${
+                instructorPosition === "bottom"
+                  ? "bg-primary-container text-on-primary border-primary font-bold shadow-xs"
+                  : "bg-surface-slate text-on-surface border-border-subtle hover:bg-surface-container"
+              }`}
+            >
+              ↓ Di Bawah (Belakang)
+            </button>
+          </div>
+          <p className="text-[11px] text-on-surface-variant">
+            Atau klik/seret elemen instruktur di denah untuk memindahkan ke mana saja.
+          </p>
+        </section>
+      )}
 
       <section className="rounded-2xl bg-surface-card border border-border-subtle p-space-md shadow-xs flex flex-col gap-3">
         <h3 className="font-label-lg text-label-lg text-on-surface">Ukuran ruangan</h3>

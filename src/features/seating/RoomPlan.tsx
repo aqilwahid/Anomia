@@ -70,11 +70,18 @@ export interface RoomPlanProps {
   highlightParticipantId?: string | null;
   revealedSeatKey?: string | null;
   pickedParticipantId?: string | null;
+  instructorPosition?: "top" | "bottom" | "custom";
+  instructorX?: number;
+  instructorY?: number;
+  instructorLabel?: string;
+  selectedInstructor?: boolean;
   header?: ExportHeader;
   svgRef?: React.Ref<SVGSVGElement>;
   onSeatPointerDown?: (key: string, e: React.PointerEvent<SVGGElement>) => void;
   onSeatClick?: (key: string, e: React.MouseEvent<SVGGElement>) => void;
   onTablePointerDown?: (tableId: string, e: React.PointerEvent<SVGGElement>) => void;
+  onInstructorPointerDown?: (e: React.PointerEvent<SVGGElement>) => void;
+  onInstructorClick?: (e: React.MouseEvent<SVGGElement>) => void;
   onBackgroundPointerDown?: () => void;
   className?: string;
   style?: React.CSSProperties;
@@ -82,7 +89,7 @@ export interface RoomPlanProps {
 
 /**
  * The whole training room as one SVG drawing: front wall with screen and
- * facilitator desk, every table in its real position/rotation, and every
+ * instructor desk, every table in its real position/rotation, and every
  * chair with the participant's face and name. The same component renders
  * the interactive editor and the print / PNG version, so what you share is
  * exactly the room you arranged.
@@ -101,11 +108,18 @@ export const RoomPlan = memo(function RoomPlan({
   highlightParticipantId,
   revealedSeatKey,
   pickedParticipantId,
+  instructorPosition = "top",
+  instructorX,
+  instructorY,
+  instructorLabel,
+  selectedInstructor,
   header,
   svgRef,
   onSeatPointerDown,
   onSeatClick,
   onTablePointerDown,
+  onInstructorPointerDown,
+  onInstructorClick,
   onBackgroundPointerDown,
   className,
   style,
@@ -197,18 +211,127 @@ export const RoomPlan = memo(function RoomPlan({
           onPointerDown={onBackgroundPointerDown}
         />
 
-        {/* front of the room */}
-        <g className="rp-t" pointerEvents="none">
-          <rect x={(roomWidth - screenW) / 2} y={16} width={screenW} height={12} rx={5} fill="#334155" />
-          <text x={roomWidth / 2} y={50} fontSize={13} fontWeight={700} fill={MUTED} textAnchor="middle" letterSpacing={2}>
-            LAYAR · DEPAN KELAS
-          </text>
-          <rect x={roomWidth / 2 - 70} y={64} width={140} height={46} rx={10} fill="#eef2ff" stroke="#c7d2fe" strokeWidth={2} />
-          <text x={roomWidth / 2} y={92} fontSize={14} fontWeight={600} fill="#4338ca" textAnchor="middle">
-            Fasilitator
-          </text>
-          <line x1={24} x2={roomWidth - 24} y1={FRONT_ZONE - 8} y2={FRONT_ZONE - 8} stroke="#e2e8f0" strokeWidth={2} strokeDasharray="10 10" />
-        </g>
+        {/* instructor & screen zone */}
+        {(() => {
+          const isBottom = instructorPosition === "bottom";
+          const isCustom = instructorPosition === "custom";
+
+          const instCenterX = instructorX ?? roomWidth / 2;
+          let screenY: number;
+          let screenLabelY: number;
+          let screenLabelText = "LAYAR · DEPAN KELAS";
+          const deskX = instCenterX - 70;
+          let deskY: number;
+
+          if (isBottom) {
+            screenY = roomDepth - 28;
+            screenLabelY = roomDepth - 34;
+            screenLabelText = "LAYAR · BELAKANG KELAS";
+            deskY = roomDepth - 94;
+          } else if (isCustom) {
+            const instCenterY = instructorY ?? 64;
+            deskY = instCenterY - 23;
+            if (instCenterY >= roomDepth / 2) {
+              screenY = Math.min(roomDepth - 28, instCenterY + 32);
+              screenLabelY = screenY - 6;
+              screenLabelText = "LAYAR";
+            } else {
+              screenY = Math.max(16, instCenterY - 44);
+              screenLabelY = screenY + 22;
+              screenLabelText = "LAYAR";
+            }
+          } else {
+            // top
+            screenY = 16;
+            screenLabelY = 50;
+            screenLabelText = "LAYAR · DEPAN KELAS";
+            deskY = 64;
+          }
+
+          const instLabel = instructorLabel || "Instruktur";
+          const minY = Math.min(deskY, screenY);
+          const maxY = Math.max(deskY + 46, screenY + 12);
+          const minX = Math.min(deskX, (roomWidth - screenW) / 2);
+          const maxX = Math.max(deskX + 140, (roomWidth + screenW) / 2);
+
+          return (
+            <g
+              className="rp-t"
+              pointerEvents={mode === "layout" ? "all" : "none"}
+              style={mode === "layout" ? { cursor: "move", touchAction: "none" } : undefined}
+              onPointerDown={mode === "layout" ? onInstructorPointerDown : undefined}
+              onClick={mode === "layout" ? onInstructorClick : undefined}
+            >
+              {/* Highlight bounding box when selected in layout mode */}
+              {selectedInstructor && mode === "layout" && (
+                <g pointerEvents="none">
+                  <rect
+                    x={minX - 10}
+                    y={minY - 10}
+                    width={maxX - minX + 20}
+                    height={maxY - minY + 20}
+                    rx={14}
+                    fill="rgba(37,99,235,0.06)"
+                    stroke={BLUE}
+                    strokeWidth={2}
+                    strokeDasharray="8 6"
+                  />
+                  <rect
+                    x={instCenterX - 65}
+                    y={minY - 14}
+                    width={130}
+                    height={18}
+                    rx={5}
+                    fill={BLUE}
+                  />
+                  <text
+                    x={instCenterX}
+                    y={minY - 1}
+                    fontSize={10}
+                    fontWeight={700}
+                    fill="#ffffff"
+                    textAnchor="middle"
+                  >
+                    Instruktur & Layar
+                  </text>
+                </g>
+              )}
+
+              {/* Screen */}
+              <rect x={(roomWidth - screenW) / 2} y={screenY} width={screenW} height={12} rx={5} fill="#334155" />
+              <text x={roomWidth / 2} y={screenLabelY} fontSize={13} fontWeight={700} fill={MUTED} textAnchor="middle" letterSpacing={2}>
+                {screenLabelText}
+              </text>
+
+              {/* Instructor desk */}
+              <rect
+                x={deskX}
+                y={deskY}
+                width={140}
+                height={46}
+                rx={10}
+                fill="#eef2ff"
+                stroke={selectedInstructor ? BLUE : "#c7d2fe"}
+                strokeWidth={selectedInstructor ? 2.5 : 2}
+              />
+              <text x={instCenterX} y={deskY + 28} fontSize={14} fontWeight={600} fill="#4338ca" textAnchor="middle">
+                {instLabel}
+              </text>
+
+              {!isCustom && (
+                <line
+                  x1={24}
+                  x2={roomWidth - 24}
+                  y1={isBottom ? roomDepth - FRONT_ZONE + 8 : FRONT_ZONE - 8}
+                  y2={isBottom ? roomDepth - FRONT_ZONE + 8 : FRONT_ZONE - 8}
+                  stroke="#e2e8f0"
+                  strokeWidth={2}
+                  strokeDasharray="10 10"
+                />
+              )}
+            </g>
+          );
+        })()}
 
         {/* tables */}
         {tables.map((table) => {
